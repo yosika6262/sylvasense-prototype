@@ -115,7 +115,10 @@ function LayerToggle({
   );
 }
 
-function ForestMap({ layers }: { layers: LayerState }) {
+function ForestMap({ layers, area }: { layers: LayerState; area?: { name?: string; lat?: number; lon?: number; changeAreaHa?: number; risk?: string } }) {
+  const seed = Math.abs(Math.round((area?.lat ?? 11.105) * 10 + (area?.lon ?? 76.405))) % 7;
+  const drift = seed * 9;
+  const riskColor = area?.risk === "high" ? "#ef986d" : area?.risk === "low" ? "#84d7a1" : "#f5c46f";
   return (
     <div className="map-shell">
       <div className="map-toolbar">
@@ -136,7 +139,7 @@ function ForestMap({ layers }: { layers: LayerState }) {
         <path d="M-20 182 C155 137 241 237 381 196 S630 104 792 184 S912 232 1020 173" stroke="#7ac291" strokeOpacity=".12" strokeWidth="2" fill="none" />
         <path d="M-30 488 C136 421 224 470 347 422 S574 352 715 429 S889 488 1030 400" stroke="#9ee0ad" strokeOpacity=".13" strokeWidth="4" fill="none" />
         <g opacity=".25"><path d="M58 496L224 170L430 496Z" fill="#7ebf8b" /><path d="M420 512L665 132L950 512Z" fill="#5d9674" /></g>
-        <g className="map-raster" opacity={layers.optical ? 1 : .18}>
+        <g className="map-raster" opacity={layers.optical ? 1 : .18} transform={`translate(${drift} ${seed * 3})`}>
           {Array.from({ length: 90 }).map((_, i) => {
             const x = (i * 97) % 960 + 15; const y = (i * 53) % 380 + 70;
             const r = 14 + (i % 5) * 4;
@@ -144,15 +147,15 @@ function ForestMap({ layers }: { layers: LayerState }) {
           })}
         </g>
         {layers.sar && <g opacity=".54"><path d="M100 400L910 120M42 456L850 176M150 500L960 220" stroke="#d8a56a" strokeWidth="2" strokeDasharray="5 9" /><text x="745" y="110" fill="#f1c98f" fontSize="11" letterSpacing="2">SAR STRUCTURE SIGNAL</text></g>}
-        {layers.change && <g className="change-layer"><path d="M600 253L712 248L767 331L711 370L629 344Z" fill="#e6885d" fillOpacity=".20" stroke="#ef986d" strokeWidth="2" strokeDasharray="6 5" /><path d="M678 368L770 342L826 390L789 438L693 427Z" fill="#b67bf0" fillOpacity=".17" stroke="#c998f5" strokeWidth="2" strokeDasharray="6 5" /><text x="706" y="307" fill="#ffc09d" fontSize="11" letterSpacing="1.8">POSSIBLE CHANGE</text></g>}
+        {layers.change && <g className="change-layer" transform={`translate(${seed * 4} ${seed * 2})`}><path d="M600 253L712 248L767 331L711 370L629 344Z" fill="#e6885d" fillOpacity=".20" stroke={riskColor} strokeWidth="2" strokeDasharray="6 5" /><path d="M678 368L770 342L826 390L789 438L693 427Z" fill="#b67bf0" fillOpacity=".17" stroke="#c998f5" strokeWidth="2" strokeDasharray="6 5" /><text x="706" y="307" fill="#ffc09d" fontSize="11" letterSpacing="1.8">{area?.risk?.toUpperCase() ?? "POSSIBLE"} CHANGE</text></g>}
         {layers.biomass && <g opacity=".72"><circle cx="410" cy="332" r="92" fill="#c6db68" fillOpacity=".16" /><circle cx="650" cy="397" r="106" fill="#e0a15f" fillOpacity=".12" /><text x="353" y="335" fill="#d7ee8a" fontSize="11">HIGH AGB ZONE</text></g>}
         {layers.crowns && <g className="crowns-layer">{crownPoints.map(([cx, cy], i) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={8 + (i % 3) * 2} fill="#9ce3b0" fillOpacity=".09" stroke="#9ce3b0" strokeOpacity=".65" strokeWidth="1.3" />)}</g>}
-        <path d="M200 370L268 276L404 236L548 256L692 235L795 323L757 430L636 462L460 475L302 444Z" fill="#86d5a0" fillOpacity=".045" stroke="#b4e7bb" strokeWidth="2.2" strokeDasharray="8 6" />
+        <path d="M200 370L268 276L404 236L548 256L692 235L795 323L757 430L636 462L460 475L302 444Z" fill="#86d5a0" fillOpacity=".045" stroke={riskColor} strokeWidth="2.2" strokeDasharray="8 6" />
         <circle cx="530" cy="351" r="7" fill="#f5c46f" stroke="#15271e" strokeWidth="4" /><circle cx="530" cy="351" r="15" fill="none" stroke="#f5c46f" strokeOpacity=".4" strokeWidth="2" />
-        <g className="map-labels"><text x="42" y="55">11°06'00" N</text><text x="824" y="515">76°24'00" E</text><text x="46" y="500">WGS 84 / UTM 43N</text></g>
+        <g className="map-labels"><text x="42" y="55">{area?.lat?.toFixed(3) ?? "11.105"}° {area?.lat && area.lat < 0 ? "S" : "N"}</text><text x="824" y="515">{Math.abs(area?.lon ?? 76.405).toFixed(3)}° {area?.lon && area.lon < 0 ? "W" : "E"}</text><text x="46" y="500">{area?.name?.toUpperCase() ?? "FOREST AREA"}</text></g>
         <g className="map-scale"><rect x="40" y="453" width="100" height="3" fill="#d4edda" /><text x="40" y="446">1 km</text></g>
       </svg>
-      <div className="map-footer"><div><StatusDot color="#78dba3" /><span>Target polygon</span><span className="map-coords">11.105° N, 76.405° E</span></div><div className="map-zoom"><button>−</button><span>1.8×</span><button>+</button></div></div>
+      <div className="map-footer"><div><StatusDot color={riskColor} /><span>{area?.name ?? "Target polygon"}</span><span className="map-coords">{area?.lat?.toFixed(3) ?? "11.105"}°, {area?.lon?.toFixed(3) ?? "76.405"}° · {area?.changeAreaHa?.toFixed(1) ?? "6.7"} ha signal</span></div><div className="map-zoom"><button>−</button><span>1.8×</span><button>+</button></div></div>
     </div>
   );
 }
@@ -228,7 +231,7 @@ export default function Home() {
           <section className="analysis-grid">
             <div className="map-column">
               <div className="section-toolbar"><div className="tab-switch"><button className={activeTab === "overview" ? "selected" : ""} onClick={() => setActiveTab("overview")}>Evidence map</button><button className={activeTab === "quality" ? "selected" : ""} onClick={() => setActiveTab("quality")}>Quality report</button></div><div className="map-toolbar-meta"><span><span className="mini-legend optical" /> Optical</span><span><span className="mini-legend change" /> Change signal</span><span className="layer-count"><Layers3 size={13} /> {visibleLayerCount} layers</span></div></div>
-              {activeTab === "overview" ? <ForestMap layers={layers} /> : <div className="quality-panel"><div className="quality-hero"><div><span className="eyebrow">DATA CONFIDENCE</span><h2>Strong enough for a pilot review</h2><p>Evidence coverage is high for vegetation analysis. Mask R-CNN is configured, but trained weights and field-reviewed labels are still required.</p></div><div className="quality-score">97<span>%</span><small>valid pixels</small></div></div><div className="quality-list"><div><span>Optical coverage</span><b>97.05%</b><i><span style={{ width: "97%" }} /></i></div><div><span>Scene cloud cover</span><b>0.26%</b><i><span style={{ width: "9%", background: "#f0bc70" }} /></i></div><div><span>Crown confidence</span><b>82%</b><i><span style={{ width: "82%", background: "#bc88e7" }} /></i></div><div><span>Change confidence</span><b>76%</b><i><span style={{ width: "76%", background: "#e38c67" }} /></i></div></div><div className="warning-box"><AlertTriangle size={17} /><span>Mask R-CNN crown segmentation requires high-resolution imagery, trained weights, and field validation before production use.</span></div></div>}
+              {activeTab === "overview" ? <ForestMap layers={layers} area={current} /> : <div className="quality-panel"><div className="quality-hero"><div><span className="eyebrow">DATA CONFIDENCE</span><h2>Strong enough for a pilot review</h2><p>Evidence coverage is high for vegetation analysis. Mask R-CNN is configured, but trained weights and field-reviewed labels are still required.</p></div><div className="quality-score">97<span>%</span><small>valid pixels</small></div></div><div className="quality-list"><div><span>Optical coverage</span><b>97.05%</b><i><span style={{ width: "97%" }} /></i></div><div><span>Scene cloud cover</span><b>0.26%</b><i><span style={{ width: "9%", background: "#f0bc70" }} /></i></div><div><span>Crown confidence</span><b>82%</b><i><span style={{ width: "82%", background: "#bc88e7" }} /></i></div><div><span>Change confidence</span><b>76%</b><i><span style={{ width: "76%", background: "#e38c67" }} /></i></div></div><div className="warning-box"><AlertTriangle size={17} /><span>Mask R-CNN crown segmentation requires high-resolution imagery, trained weights, and field validation before production use.</span></div></div>}
               <div className="timeline-panel"><div className="panel-heading"><div><span className="eyebrow">TEMPORAL SIGNAL</span><h3>Canopy activity over time</h3></div><div className="date-range"><CalendarDays size={14} /> Dec 2024 — Dec 2025 <ChevronDown size={13} /></div></div><TrendChart /><div className="trend-legend"><span><i className="line green" /> NDVI activity</span><span><i className="line violet" /> Structure proxy</span><span><i className="line amber" /> Review point</span><span className="trend-note"><ArrowDownRight size={13} /> 0.08 from baseline</span></div></div>
             </div>
 

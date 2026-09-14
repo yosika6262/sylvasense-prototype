@@ -112,3 +112,6 @@ temp/
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
+
+# Large pretrained model binary: keep locally / upload via Management UI File Storage
+ml/artifacts/*.pth

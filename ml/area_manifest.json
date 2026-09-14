@@ -1,0 +1,21 @@
+{
+  "model": {
+    "id": "detectree2-tropical-randresize",
+    "checkpoint": "ml/artifacts/230103_randresize_full.pth",
+    "checkpoint_url": "https://zenodo.org/records/10522461/files/230103_randresize_full.pth",
+    "status": "downloaded",
+    "input_requirement": "high-resolution aerial or UAV RGB GeoTIFF, approximately 100 m tiles"
+  },
+  "areas": [
+    {"id":"western-ghats","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"UAV or aerial RGB imagery","note":"Sentinel-2 is not high-resolution enough for individual crowns."},
+    {"id":"amazon-manaus","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"airborne RGB orthomosaic","note":"Validate tropical transfer before using counts."},
+    {"id":"congo-basin","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"airborne RGB orthomosaic","note":"Validate tropical transfer before using counts."},
+    {"id":"borneo-heart","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"UAV or airborne RGB orthomosaic","note":"Dense canopy may need local fine-tuning."},
+    {"id":"new-guinea","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"UAV or airborne RGB orthomosaic","note":"Mountain terrain needs careful orthorectification."},
+    {"id":"carpathians","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"airborne RGB orthomosaic","note":"Tropical checkpoint may transfer poorly; validate locally."},
+    {"id":"pacific-northwest","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"airborne RGB orthomosaic","note":"Use a temperate validation model if available."},
+    {"id":"tasmania","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"airborne RGB orthomosaic","note":"Species and canopy structure differ from training sites."},
+    {"id":"atlantic-forest","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"UAV or airborne RGB orthomosaic","note":"Tropical checkpoint is a reasonable starting baseline."},
+    {"id":"sundarbans","imagery_status":"source-needed","prediction_status":"not-run","recommended_source":"UAV or airborne RGB orthomosaic","note":"Mangrove structure requires dedicated validation."}
+  ]
+}

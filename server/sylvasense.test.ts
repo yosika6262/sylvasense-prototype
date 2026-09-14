@@ -27,7 +27,7 @@ describe("analysis.snapshot", () => {
     expect(snapshot.model.name).toContain("Mask R-CNN");
     expect(snapshot.model.status).toContain("weights pending");
     expect(snapshot.model.pretrainedBaseline.checkpointUrl).toContain("zenodo.org");
-    expect(snapshot.model.pretrainedBaseline.status).toContain("linked-pretrained-checkpoint");
+    expect(snapshot.model.pretrainedBaseline.status).toContain("weights-downloaded");
     expect(snapshot.layerDescriptions.optical).toContain("Sentinel-2");
     expect(snapshot.warnings).toHaveLength(3);
     expect(snapshot.warnings.join(" ")).toContain("not a verified carbon-credit measurement");

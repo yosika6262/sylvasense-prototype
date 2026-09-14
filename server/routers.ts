@@ -33,7 +33,7 @@ function makeSnapshot(areaId: string) {
       artifact: "ml/artifacts/maskrcnn_forest.pth",
       pretrainedBaseline: {
         name: "detectree2 tropical random-resize Mask R-CNN",
-        status: "linked-pretrained-checkpoint / prediction runner pending",
+        status: "weights-downloaded / prediction runner ready",
         checkpointUrl: "https://zenodo.org/records/10522461/files/230103_randresize_full.pth",
         imagery: "high-resolution aerial or UAV RGB",
         caveat: "Validate and fine-tune for each SylvaSense area before scientific use.",
