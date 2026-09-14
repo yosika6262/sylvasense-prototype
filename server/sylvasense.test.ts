@@ -13,8 +13,11 @@ function createPublicContext(): TrpcContext {
 describe("analysis.snapshot", () => {
   it("returns a reproducible evidence snapshot with provenance and limitations", async () => {
     const caller = appRouter.createCaller(createPublicContext());
-    const snapshot = await caller.analysis.snapshot();
+    const areas = await caller.analysis.areas();
+    const snapshot = await caller.analysis.snapshot({ areaId: "western-ghats" });
 
+    expect(areas).toHaveLength(10);
+    expect(areas.map((area) => area.id)).toContain("amazon-manaus");
     expect(snapshot.project).toContain("Western Ghats");
     expect(snapshot.areaHa).toBeGreaterThan(0);
     expect(snapshot.resolutionM).toBe(10);

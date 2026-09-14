@@ -162,7 +162,9 @@ function TrendChart() {
 }
 
 export default function Home() {
-  const { data: snapshot, isLoading } = trpc.analysis.snapshot.useQuery();
+  const { data: areas } = trpc.analysis.areas.useQuery();
+  const [selectedAreaId, setSelectedAreaId] = useState("western-ghats");
+  const { data: snapshot, isLoading } = trpc.analysis.snapshot.useQuery({ areaId: selectedAreaId });
   const ask = trpc.analysis.askAssistant.useMutation();
   const [layers, setLayers] = useState<LayerState>(defaultLayers);
   const [activeTab, setActiveTab] = useState<"overview" | "quality">("overview");
@@ -175,6 +177,7 @@ export default function Home() {
   const [runComplete, setRunComplete] = useState(true);
   const [datePosition, setDatePosition] = useState(100);
 
+  const selectedArea = areas?.find((area) => area.id === selectedAreaId);
   const current = snapshot ?? {
     areaHa: 124.8, ndviMean: .71, ndviChange: -.08, treeCount: 184, agb: 126.4, carbon: 59.4, changeAreaHa: 6.7, validPixels: 97.05, crownConfidence: .82, changeConfidence: .76, cloudCover: .26, opticalDate: "13 Dec 2025", baselineDate: "19 Dec 2024", source: "Sentinel-2 L2A + Sentinel-1 GRD demonstration stack", resolutionM: 10,
   } as const;
@@ -194,7 +197,7 @@ export default function Home() {
     if (!trimmed || ask.isPending) return;
     setQuestion(""); setMessages((items) => [...items, { role: "user", text: trimmed }]);
     try {
-      const result = await ask.mutateAsync({ question: trimmed });
+      const result = await ask.mutateAsync({ question: trimmed, areaId: selectedAreaId });
       setMessages((items) => [...items, { role: "assistant", text: result.answer }]);
     } catch {
       setMessages((items) => [...items, { role: "assistant", text: "The evidence guide is unavailable right now. Please try again." }]);
@@ -210,15 +213,15 @@ export default function Home() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand"><div className="brand-mark"><TreePine size={19} /></div><div><b>Sylva<span>Sense</span></b><small>Forest intelligence</small></div></div>
-        <div className="workspace-select"><span className="workspace-avatar">WG</span><div><b>Western Ghats pilot</b><small>Monitoring workspace</small></div><ChevronDown size={15} /></div>
+        <label className="workspace-select"><span className="workspace-avatar">{selectedArea?.region?.slice(0, 2).toUpperCase() ?? "WG"}</span><div><b>{selectedArea?.name ?? "Forest area"}</b><small>{selectedArea?.region ?? "Monitoring workspace"}</small></div><select aria-label="Select forest area" value={selectedAreaId} onChange={(event) => setSelectedAreaId(event.target.value)}>{areas?.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}</select><ChevronDown size={15} /></label>
         <nav className="side-nav"><div className="nav-section">WORKSPACE</div><button className="nav-item active"><Activity size={17} /><span>Overview</span><span className="nav-count">01</span></button><button className="nav-item"><Layers3 size={17} /><span>Evidence layers</span></button><button className="nav-item"><TreePine size={17} /><span>Crown inventory</span><span className="nav-pill">BETA</span></button><button className="nav-item"><Radio size={17} /><span>Change watch</span><span className="alert-count">2</span></button><div className="nav-section second">PROJECT</div><button className="nav-item"><MapPin size={17} /><span>Areas & polygons</span></button><button className="nav-item"><FileJson size={17} /><span>Exports</span></button><button className="nav-item"><CircleHelp size={17} /><span>Methodology</span></button></nav>
         <div className="sidebar-bottom"><div className="pipeline-status"><div className="status-line"><StatusDot /><span>Pipeline healthy</span><span className="status-time">2m ago</span></div><div className="progress-track"><span style={{ width: "82%" }} /></div><small>Evidence synced · 4 of 4 sources</small></div><div className="user-chip"><div className="user-avatar">AS</div><div><b>Arjun Sharma</b><small>Project owner</small></div><Menu size={16} /></div></div>
       </aside>
 
       <main className="main-content">
-        <header className="topbar"><div className="mobile-brand"><div className="brand-mark"><TreePine size={17} /></div><b>Sylva<span>Sense</span></b></div><div className="breadcrumbs"><span>Workspace</span><span>/</span><b>Western Ghats pilot</b></div><div className="top-actions"><div className="live-indicator"><StatusDot /><span>Live analysis</span></div><button className="icon-button mobile-only"><Menu size={18} /></button><button className="outline-button" onClick={downloadJson}><Download size={15} /> Export report</button><button className="primary-button" onClick={runAnalysis} disabled={running}>{running ? <RefreshCw size={15} className="spin" /> : <Play size={15} />}{running ? "Processing" : "Run analysis"}</button></div></header>
+        <header className="topbar"><div className="mobile-brand"><div className="brand-mark"><TreePine size={17} /></div><b>Sylva<span>Sense</span></b></div><div className="breadcrumbs"><span>Workspace</span><span>/</span><b>{selectedArea?.name ?? "Forest area"}</b></div><div className="top-actions"><div className="live-indicator"><StatusDot /><span>Live analysis</span></div><button className="icon-button mobile-only"><Menu size={18} /></button><button className="outline-button" onClick={downloadJson}><Download size={15} /> Export report</button><button className="primary-button" onClick={runAnalysis} disabled={running}>{running ? <RefreshCw size={15} className="spin" /> : <Play size={15} />}{running ? "Processing" : "Run analysis"}</button></div></header>
         <div className="content-wrap">
-          <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line" /> FOREST MONITORING / AREA 01</div><h1>Western Ghats <em>pilot</em></h1><p>Evidence-led canopy intelligence for a 124.8 ha forest polygon.</p></div><div className="heading-meta"><div className="data-source"><Satellite size={16} /><span><b>Sentinel-2 + Sentinel-1</b><small>Last scene · {current.opticalDate}</small></span></div><div className="scene-quality"><span>SCENE QUALITY</span><b><StatusDot /> 97.0%</b></div></div></section>
+          <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line" /> FOREST MONITORING / AREA {String((areas?.findIndex((area) => area.id === selectedAreaId) ?? 0) + 1).padStart(2, "0")}</div><h1>{selectedArea?.name?.split(" ").slice(0, -1).join(" ") || selectedArea?.name || "Forest"} <em>{selectedArea?.name?.split(" ").slice(-1).join(" ") || "area"}</em></h1><p>Evidence-led canopy intelligence for a {current.areaHa} ha forest polygon.</p></div><div className="heading-meta"><div className="data-source"><Satellite size={16} /><span><b>Sentinel-2 + Sentinel-1</b><small>Last scene · {current.opticalDate}</small></span></div><div className="scene-quality"><span>SCENE QUALITY</span><b><StatusDot /> 97.0%</b></div></div></section>
 
           <section className="metric-grid"><MetricCard icon={Leaf} label="Mean NDVI" value={current.ndviMean.toFixed(2)} delta="-0.08 vs baseline" tone="green" /><MetricCard icon={TreePine} label="Crown instances" value={formatNumber(current.treeCount)} unit=" trees" delta="82% confidence" tone="violet" /><MetricCard icon={Zap} label="AGB estimate" value={current.agb.toFixed(1)} unit=" t/ha" delta="baseline model" tone="amber" /><MetricCard icon={AlertTriangle} label="Possible change" value={current.changeAreaHa.toFixed(1)} unit=" ha" delta="5.4% of polygon" tone="blue" /></section>
 
