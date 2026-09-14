@@ -31,6 +31,13 @@ function makeSnapshot(areaId: string) {
       status: "integration-ready / weights pending",
       scoreThreshold: 0.70,
       artifact: "ml/artifacts/maskrcnn_forest.pth",
+      pretrainedBaseline: {
+        name: "detectree2 tropical random-resize Mask R-CNN",
+        status: "linked-pretrained-checkpoint / prediction runner pending",
+        checkpointUrl: "https://zenodo.org/records/10522461/files/230103_randresize_full.pth",
+        imagery: "high-resolution aerial or UAV RGB",
+        caveat: "Validate and fine-tune for each SylvaSense area before scientific use.",
+      },
     },
     source: "Sentinel-2 L2A + Sentinel-1 GRD demonstration stack",
     opticalDate: "13 Dec 2025",

@@ -51,3 +51,19 @@ The output contains one record per crown with its confidence, bounding box, bina
 ## Scientific gate before production
 
 Do not label the prototype as field-validated until the holdout set reports crown precision, recall, mask IoU, and count error. A good first acceptance gate is mask IoU ≥ 0.50, crown F1 ≥ 0.70, and median count error ≤ 15% on a geographically separate holdout area. These are project gates, not universal scientific standards.
+
+## Open pretrained predictions
+
+For an immediate pretrained baseline, use the open **detectree2 tropical random-resize Mask R-CNN** checkpoint:
+
+```bash
+wget -O ml/artifacts/230103_randresize_full.pth \
+  https://zenodo.org/records/10522461/files/230103_randresize_full.pth
+pip install -r ml/detectree2-requirements.txt
+python ml/detectree2_infer.py \
+  --checkpoint ml/artifacts/230103_randresize_full.pth \
+  --image path/to/high_resolution_rgb_tile.tif \
+  --output artifacts/detectree2_predictions.geojson
+```
+
+This checkpoint was trained on tropical forest sites and is the best open starting point for the forest-crown use case. It is **not** a guarantee of accuracy for all ten SylvaSense areas. Validate predictions on each area and fine-tune with local crown annotations before using counts for biomass or carbon decisions. The dashboard records the checkpoint as linked, but it will not claim that predictions were executed until this runner produces a GeoJSON output.

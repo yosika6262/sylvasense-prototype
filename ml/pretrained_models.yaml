@@ -1,0 +1,18 @@
+models:
+  - id: detectree2-tropical-randresize
+    name: detectree2 tropical random-resize Mask R-CNN
+    architecture: Mask R-CNN
+    checkpoint_url: https://zenodo.org/records/10522461/files/230103_randresize_full.pth
+    checkpoint_sha_note: Verify the downloaded checksum against the Zenodo record before production use.
+    imagery: aerial RGB / UAV RGB
+    intended_use: tropical forest tree-crown delineation
+    tile_size_m: 100
+    status: linked-pretrained-checkpoint
+    caveat: Not trained on SylvaSense locations; validate and fine-tune locally.
+  - id: custom-sylvasense-maskrcnn
+    name: SylvaSense custom Mask R-CNN
+    architecture: Mask R-CNN ResNet-50 FPN
+    checkpoint_url: null
+    imagery: high-resolution RGB or false-color GeoTIFF
+    intended_use: project-specific crown segmentation
+    status: weights-pending
