@@ -1,0 +1,28 @@
+model:
+  name: maskrcnn_resnet50_fpn
+  classes:
+    - background
+    - tree_crown
+  pretrained_backbone: true
+  score_threshold: 0.70
+training:
+  epochs: 20
+  batch_size: 2
+  learning_rate: 0.0002
+  weight_decay: 0.0001
+  optimizer: AdamW
+data:
+  imagery: high_resolution_rgb_or_false_color_geotiff
+  label_type: polygon_instance_masks
+  minimum_crown_area_pixels: 16
+validation:
+  required_metrics:
+    - crown_precision
+    - crown_recall
+    - crown_f1
+    - mask_iou
+    - median_count_error_percent
+  production_gate:
+    mask_iou: 0.50
+    crown_f1: 0.70
+    median_count_error_percent: 15
