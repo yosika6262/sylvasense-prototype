@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
 import { trpc } from "@/lib/trpc";
 import {
@@ -187,9 +187,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"overview" | "quality">("overview");
   const [assistantOpen, setAssistantOpen] = useState(true);
   const [question, setQuestion] = useState("");
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; text: string }>>([
-    { role: "assistant", text: "I’m grounded in the current Western Ghats evidence stack. Ask me about vegetation, possible change, biomass, or data limitations." },
-  ]);
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; text: string }>>([]);
   const [running, setRunning] = useState(false);
   const [runComplete, setRunComplete] = useState(true);
   const [datePosition, setDatePosition] = useState(100);
@@ -199,6 +197,11 @@ export default function Home() {
   const current = snapshot ?? {
     areaHa: 124.8, ndviMean: .71, ndviChange: -.08, treeCount: 184, agb: 126.4, carbon: 59.4, changeAreaHa: 6.7, validPixels: 97.05, crownConfidence: .82, changeConfidence: .76, cloudCover: .26, opticalDate: "13 Dec 2025", baselineDate: "19 Dec 2024", source: "Sentinel-2 L2A + Sentinel-1 GRD demonstration stack", resolutionM: 10,
   } as const;
+
+  useEffect(() => {
+    setMessages([{ role: "assistant", text: `I’m grounded in the current ${selectedArea?.name ?? "forest area"} evidence stack. Ask me about vegetation, possible change, biomass, or data limitations.` }]);
+    setQuestion("");
+  }, [selectedAreaId, selectedArea?.name]);
 
   const visibleLayerCount = useMemo(() => Object.values(layers).filter(Boolean).length, [layers]);
 
@@ -262,7 +265,7 @@ export default function Home() {
 
             <aside className={`insight-column ${assistantOpen ? "" : "closed"}`}>
               <div className="insight-header"><div><span className="eyebrow"><Sparkles size={13} /> AI EVIDENCE GUIDE</span><h2>Ask about this area</h2></div><button className="icon-button" onClick={() => setAssistantOpen(!assistantOpen)}>{assistantOpen ? <X size={16} /> : <PanelRight size={16} />}</button></div>
-              {assistantOpen && <><div className="assistant-intro"><div className="bot-orb"><Bot size={19} /></div><p>Pretrained detectree2 checkpoint linked; answers use the verified snapshot until a model run is executed.</p></div><div className="message-list">{messages.map((message, index) => <div key={index} className={`chat-message ${message.role}`}><div className="message-avatar">{message.role === "assistant" ? <Sparkles size={13} /> : "AS"}</div><div className="message-bubble">{message.role === "assistant" ? <Streamdown>{message.text}</Streamdown> : message.text}</div></div>)}{ask.isPending && <div className="chat-message assistant"><div className="message-avatar"><Sparkles size={13} /></div><div className="message-bubble typing"><span /><span /><span /></div></div>}</div><div className="question-chips">{questions.map((item) => <button key={item} onClick={() => submitQuestion(item)}>{item}</button>)}</div><form className="ask-form" onSubmit={(event) => { event.preventDefault(); submitQuestion(); }}><input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about the evidence..." /><button type="submit" disabled={!question.trim() || ask.isPending}><Send size={16} /></button></form><div className="grounding-note"><Check size={13} /> Grounded in 1 analysis snapshot · <button onClick={downloadJson}>view JSON</button></div></>}
+              {assistantOpen && <><div className="assistant-intro"><div className="bot-orb"><Bot size={19} /></div><p>Pretrained detectree2 checkpoint linked; answers use the verified {selectedArea?.name ?? "forest area"} snapshot until a model run is executed.</p></div><div className="message-list">{messages.map((message, index) => <div key={index} className={`chat-message ${message.role}`}><div className="message-avatar">{message.role === "assistant" ? <Sparkles size={13} /> : "AS"}</div><div className="message-bubble">{message.role === "assistant" ? <Streamdown>{message.text}</Streamdown> : message.text}</div></div>)}{ask.isPending && <div className="chat-message assistant"><div className="message-avatar"><Sparkles size={13} /></div><div className="message-bubble typing"><span /><span /><span /></div></div>}</div><div className="question-chips">{questions.map((item) => <button key={item} onClick={() => submitQuestion(item)}>{item}</button>)}</div><form className="ask-form" onSubmit={(event) => { event.preventDefault(); submitQuestion(); }}><input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={`Ask about ${selectedArea?.name ?? "this area"}...`} /><button type="submit" disabled={!question.trim() || ask.isPending}><Send size={16} /></button></form><div className="grounding-note"><Check size={13} /> Grounded in 1 analysis snapshot · <button onClick={downloadJson}>view JSON</button></div></>}
             </aside>
           </section>
 
